@@ -26,7 +26,7 @@ SET default_with_oids = false;
 
 CREATE TABLE public.categories (
     id integer NOT NULL,
-    type text
+    type text NOT NULL
 );
 
 
@@ -60,10 +60,10 @@ ALTER SEQUENCE public.categories_id_seq OWNED BY public.categories.id;
 
 CREATE TABLE public.questions (
     id integer NOT NULL,
-    question text,
-    answer text,
-    difficulty integer,
-    category integer
+    question text NOT NULL,
+    answer text NOT NULL,
+    difficulty integer NOT NULL,
+    category integer NOT NULL
 );
 
 
@@ -143,6 +143,33 @@ COPY public.questions (id, question, answer, difficulty, category) FROM stdin;
 21	Who discovered penicillin?	Alexander Fleming	3	1
 22	Hematology is a branch of medicine involving the study of what?	Blood	4	1
 23	Which dung beetle was worshipped by the ancient Egyptians?	Scarab	4	4
+24 	What is the nearest planet to the sun?	Mercury	2	1
+25 	What color is your blood when it’s inside your body?	Red	1	1
+26 	What is Earth's largest continent?	Asia	2	3
+27 	What country touches the Indian Ocean, the Arabian Sea, and the Bay of Bengal?	India	4	3
+28 	Which country borders 14 nations and crosses 8 time zones?	Russia	3	3
+29 	What country has the most natural lakes?	Canada	3	3
+30 	In what country would you find Lake Bled?	Slovenia	4	3
+31 	Which famous painter was also a sculptor, an architect, and an engineer?	Leonardo Da Vinci	2	2
+32 	Which other painter is often associated with Francoise Gilot?	Pablo Picasso	2	2
+33 	Who was the first living person to have their art displayed in The Louvre?	Georges Braque	5	2
+34 	Who painted the 'Mona Lisa'?	Leonardo Da Vinci	1	2
+35 	Which artist died poor but became incredibly rich after his death?	Vincent Van Gogh	3	2
+36 	What's the diameter of a basketball hoop in inches?	18	3	6
+37 	The Olympics are held every how many years?	4	2	6
+38 	What sport is best known as the 'king of sports'?	Soccer	1	6
+39 	How many dimples does an average golf ball have?	336	3	6
+40 	The United States bought Alaska from which country?	Russia	2	4
+41 	Which year was George H.W. Bush elected president?	1988	2	4
+42 	What year did the North American Free Trade Agreement (NAFTA) go into effect?	1994	2	4
+43 	During which war was a Christmas Truce called?	World War I	3	4
+44 	Who was the first Emperor of Rome?	Augustus	4	4
+45 	What year was the first iPhone released?	2007	4	4
+46 	What year was Facebook created?	2004	4	4
+47 	Who played Mrs. Robinson in The Graduate?	Anne Bancroft	3	5
+48 	The head of what kind of animal is front-and-center in an infamous scene from The Godfather?	Horse	3	5
+49 	Who is the author of the novel 'Little Women'?	Louisa May Alcott	4	5
+50 	Who is the author of the famous novel 'Harry Potter'?	J. K. Rowling	1	5
 \.
 
 
@@ -157,7 +184,7 @@ SELECT pg_catalog.setval('public.categories_id_seq', 6, true);
 -- Name: questions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: student
 --
 
-SELECT pg_catalog.setval('public.questions_id_seq', 23, true);
+SELECT pg_catalog.setval('public.questions_id_seq', 50, true);
 
 
 --
