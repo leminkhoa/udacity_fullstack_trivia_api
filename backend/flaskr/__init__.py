@@ -7,6 +7,7 @@ from sqlalchemy import exc
 
 from models.request_schema import *
 from models.models import setup_db, Question, Category
+from config import SECRET_KEY
 from . import error_handler
 
 QUESTIONS_PER_PAGE = 10
@@ -26,6 +27,7 @@ def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
     app.register_blueprint(error_handler.blueprint)
+    app.config['SECRET_KEY'] = SECRET_KEY
     setup_db(app)
     cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
