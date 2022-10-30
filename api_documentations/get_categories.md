@@ -1,4 +1,4 @@
-# GET Categories
+# Get Categories
 
 **Description** : Endpoint to handle GET requests for all available categories.
 

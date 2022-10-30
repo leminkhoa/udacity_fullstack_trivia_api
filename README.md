@@ -29,17 +29,17 @@ Both **Backend** and **Frontend** has separate set up process, please follow ins
 
 Below are all endpoints used to run Trivia Project 
 
-* [Get Question Categories](api_documentations/get_categories.md) : `GET /categories`
+* [Get Categories](api_documentations/get_categories.md) : `GET /categories`
 * [Get Questions](api_documentations/get_questions.md) : `GET /questions`
-* [Delete Questions](api_documentations/delete_questions.md) : `DELETE /questions/<int:id>`
-* [Create Questions](api_documentations/create_questions.md) : `POST /questions`
+* [Get Questions By Category](api_documentations/get_questions_by_category.md) : `GET /categories/<int:category_id>/questions`
+* [Delete Questions](api_documentations/delete_question.md) : `DELETE /questions/<int:id>`
+* [Create Questions](api_documentations/create_question.md) : `POST /questions`
 * [Search Questions](api_documentations/search_questions.md) : `POST /questions/search`
-* [Get Questions By Category](api_documentations/questions_by_category.md) : `POST /categories/<int:category_id>/questions`
-* [Play Quizzes](api_documentations/quizzes.md) : `POST /quizzes`
+* [Play Quizzes](api_documentations/play_quizzes.md) : `POST /quizzes`
 
 ### Error Handling
 Errors are returned as JSON objects in the following format:
-```
+```json
 {
     "success": False, 
     "error": 400,
