@@ -55,3 +55,5 @@ The API will return four error types when requests fail:
 - 500: Internal Server Error
 ```
 
+## License
+This repository is forked from an [original repository](https://github.com/udacity/cd0037-API-Development-and-Documentation-project) from Udacity.
