@@ -1,10 +1,13 @@
-from flask import Flask, request, abort, jsonify
-from flask_cors import CORS, cross_origin
 import random
 import sys
-from request_schema import *
-from models import setup_db, Question, Category
+
+from flask import Flask, request, abort, jsonify
+from flask_cors import CORS, cross_origin
 from sqlalchemy import exc
+
+from models.request_schema import *
+from models.models import setup_db, Question, Category
+
 
 QUESTIONS_PER_PAGE = 10
 
@@ -35,22 +38,18 @@ def create_app(test_config=None):
     
     @app.route('/categories')
     def get_categories():
-        error500 = False
         # Get categories
         try:
             categories = Category.query.order_by(Category.id).all()
-        except Exception:
-            error500 = True
+        except:
             print(sys.exc_info())
+            abort (500)
         # If there is no category, return 404
         if len(categories) == 0:
             abort (404)
         categories_dict = {}
         for category in categories:
             categories_dict[category.id] = category.type
-        # Check possible errors
-        if error500:
-            abort (500)
         return jsonify({
             'success': True,
             'categories': categories_dict,
@@ -60,32 +59,28 @@ def create_app(test_config=None):
 
     @app.route('/questions')
     def get_questions():
-        error500 = False
         # Get questions
         try:
             retrieved_questions = Question.query.order_by(Question.id).all()
         except:
             print(sys.exc_info())
-            error500 = True
+            abort (500)
         # If there is no question, return 404
         if len(retrieved_questions) == 0:
             abort (404)
         # Paginate
-        try:          
+        try:     
+            categories = Category.query.order_by(Category.id).all()     
             current_questions = paginate_questions(request, retrieved_questions)
-            categories = Category.query.order_by(Category.id).all()
         except:
-            error500 = True
             print(sys.exc_info())
+            abort (500)
         # If there is no question, return 404
         if len(categories) == 0:
             abort (404)
         categories_dict = {}
         for category in categories:
             categories_dict[category.id] = category.type
-        # Check possible errors
-        if error500:
-            abort (500)
         return jsonify({
             'success': True,
             'questions': current_questions,
@@ -102,20 +97,23 @@ def create_app(test_config=None):
     """
     @app.route('/questions/<int:id>', methods=['DELETE'])
     def delete_question(id):
-        error500 = False
-        question = Question.query.filter(Question.id == id).one_or_none()
+        try:
+            question = Question.query.filter(Question.id == id).one_or_none()
+        except:
+            print(sys.exc_info())
+            abort (500)
         # If cannot find requested id, return 404
         if question is None:
-            abort(404)
+            abort (422)
         try:
             question.delete()
-        except Exception:
-            error500 = True
+        except:
             print(sys.exc_info())
-        if error500:
             abort (500)
         return jsonify({
             'success': True,
+            'deleted': id,
+            'total_questions': len(Question.query.all())
         })
 
     """
@@ -130,9 +128,6 @@ def create_app(test_config=None):
     """
     @app.route('/questions', methods=['POST'])
     def create_question():
-        error400 = False
-        error422 = False
-        error500 = False
         # Request input
         body = request.get_json()
         # Validate request
@@ -142,7 +137,7 @@ def create_app(test_config=None):
             schema.load(body)
         except ValidationError:
             print(sys.exc_info())
-            error400 = True
+            abort (400)
         # Create a new question
         new_question = Question(
             question=body.get('question'),
@@ -155,19 +150,14 @@ def create_app(test_config=None):
             new_question.insert()
         except exc.IntegrityError:
             print(sys.exc_info())
-            error422 = True
-        except Exception:
-            print(sys.exc_info())
-            error500 = True
-        # Check possible errors
-        if error400:
-            abort (400)
-        if error422:
             abort (422)
-        if error500:
+        except:
+            print(sys.exc_info())
             abort (500)
         return jsonify({
             'success': True,
+            'created': new_question.id,
+            'total_questions': len(Question.query.all())
         })
 
     """
@@ -182,16 +172,23 @@ def create_app(test_config=None):
     """
     @app.route('/questions/search', methods=['POST'])
     def search_questions():
-        error500 = False
+        body = request.get_json()
+        # Validate request
+        schema = SearchQuestionRequestSchema()
         try:
-            body = request.get_json()
-            search_term = body.get('searchTerm')
+            # Validate request body against schema data types
+            schema.load(body)
+        except ValidationError:
+            print(sys.exc_info())
+            abort (400)
+        # Get search term
+        search_term = body.get('searchTerm')
+        # Query to find matched questions
+        try:
             questions = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
             current_questions = paginate_questions(request, questions)
-        except Exception:
-            error500 = True
+        except:
             print(sys.exc_info())
-        if error500:
             abort (500)
         return jsonify({
             'success': True,
@@ -208,21 +205,20 @@ def create_app(test_config=None):
     category to be shown.
     """
     @app.route('/categories/<int:category_id>/questions')
-    def questions_from_category(category_id):
-        error500 = False
+    def questions_by_category(category_id):
         try:
             retrieved_questions = Question.query.filter(Question.category == category_id).all()
-            current_questions = paginate_questions(request, retrieved_questions)
-        except Exception:
-            error500 = True
+        except:
             print(sys.exc_info())
-        if error500:
             abort (500)
+        if len(retrieved_questions) == 0:
+            abort (404)
+        current_questions = paginate_questions(request, retrieved_questions)
+
         return jsonify({
             'success': True,
             'questions': current_questions,
             'total_questions': len(retrieved_questions),
-            'current_category': None
         })
 
 
@@ -240,7 +236,6 @@ def create_app(test_config=None):
     """
     @app.route('/quizzes', methods=['POST'])
     def quiz():
-        error500 = False
         # Request input
         body = request.get_json()
         # Validate request
@@ -269,10 +264,8 @@ def create_app(test_config=None):
                 ).all()
             # Randomly pick from the list
             question = random.choice(questions)
-        except Exception:
-            error500 = True
+        except:
             print(sys.exc_info())
-        if error500:
             abort (500)
         return jsonify({
             'success': True,
@@ -290,7 +283,7 @@ def create_app(test_config=None):
         return jsonify({
             "success": False,
             'error': 400,
-            "message": "Bad request"
+            "message": "Bad Request"
         }), 400
 
 
